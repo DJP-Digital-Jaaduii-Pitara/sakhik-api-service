@@ -308,7 +308,7 @@ def get_formatted_documents(documents: List[Tuple[Document, Any]]):
     sources = ""
     for document, _ in documents:
         sources += f"> {document.page_content} \n"
-        if not document.metadata['file_url']:
+        if not "file_url" in document.metadata:
             sources += f"Source: {document.metadata['file_name']}"
         else:
             sources += f"Source: [{document.metadata['file_name']}]({document.metadata['file_url']})"
