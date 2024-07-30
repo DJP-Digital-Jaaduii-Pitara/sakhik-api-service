@@ -1,7 +1,7 @@
 import os
 import time
 from logger import logger
-
+import re
 from env_manager import translate_class as translator
 from utils import get_from_env_or_config
 
@@ -58,14 +58,37 @@ def process_outgoing_text(english_text, input_language):
     if not TRANSLATION_TYPE:
         return english_text, error_message
 
-    try:
-        regional_text = translator.translate_text(text=english_text, source=DEFAULT_LANGAUGE, destination=input_language)
-    except Exception as e:
-        error_message = "English translation to indic language failed"
-        logger.error(f"Exception occurred: {e}", exc_info=True)
-        regional_text = None
-    return regional_text, error_message
+    sections = split_text(english_text)
+    translated_sections, error_message = translate_sections(sections, input_language)
+    if error_message is not None:
+        return None, error_message
+    formatted_translated_text = reassemble_text(translated_sections)
+    return formatted_translated_text, None
 
+def split_text(text):
+    return re.split(r'(\t|\n)', text)
+
+
+def reassemble_text(sections):
+    return ''.join(sections)
+
+
+def translate_sections(sections, input_language):
+    translated_sections = []
+    error_message = None
+    for section in sections:
+        if section.strip():
+            try:
+                translated_text = translator.translate_text(text=section, source=DEFAULT_LANGAUGE, destination=input_language)
+            except Exception as e:
+                error_message = "English translation to indic language failed"
+                logger.error(f"Exception occurred: {e}", exc_info=True)
+                translated_text = None
+                break
+            translated_sections.append(translated_text)
+        else:
+            translated_sections.append(section)
+    return translated_sections, error_message
 
 def process_outgoing_voice(message, input_language):
     """
