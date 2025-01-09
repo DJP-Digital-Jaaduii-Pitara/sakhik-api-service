@@ -51,6 +51,9 @@ class OutputResponse(BaseModel):
     audio: str = None
     language: DropDownInputLanguage # type: ignore
     format: DropdownOutputFormat # type: ignore
+    number_of_input_tokens: int
+    number_of_output_tokens: int
+    number_of_total_tokens: int
 
 class ResponseForQuery(BaseModel):
     output: OutputResponse
@@ -136,7 +139,7 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
         is_audio = True
     
     if text is not None:
-        answer, error_message, status_code = querying_with_langchain_gpt3(index_id, text, context)
+        answer, error_message, status_code, input_tokens, output_tokens, total_tokens= querying_with_langchain_gpt3(index_id, text, context)
         if len(answer) != 0:
             regional_answer, error_message = process_outgoing_text(answer, language)
             logger.info({"regional_answer": regional_answer})
@@ -162,8 +165,8 @@ async def query(request: QueryModel, x_request_id: str = Header(None, alias="X-R
         logger.error({"index_id": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})
         raise HTTPException(status_code=status_code, detail=error_message)
 
-    response = ResponseForQuery(output=OutputResponse(text=regional_answer, audio=audio_output_url, language=language, format=output_format))
-    logger.info({"x_request_id": x_request_id, "query": query_text, "text": text, "response": response})
+    response = ResponseForQuery(output=OutputResponse(text=regional_answer, audio=audio_output_url, language=language, format=output_format, number_of_input_tokens=input_tokens, number_of_output_tokens=output_tokens, number_of_total_tokens=total_tokens))
+    logger.info({"x_request_id": x_request_id, "query": query_text, "text": text, "response": response, "number of_input_tokens":input_tokens, "number_of_output_tokens":output_tokens, "number_of_total_tokens":total_tokens})
     return response
 
 @app.post("/v1/chat", tags=["Conversation chat over Document Store"], include_in_schema=True)
@@ -200,7 +203,7 @@ async def chat(request: QueryModel, x_request_id: str = Header(None, alias="X-Re
         is_audio = True
     
     if text is not None:
-        answer, error_message, status_code = conversation_retrieval_chain(index_id, text, redis_session_id, context)
+        answer, error_message, status_code, input_tokens, output_tokens, total_tokens = conversation_retrieval_chain(index_id, text, redis_session_id, context)
         if len(answer) != 0:
             regional_answer, error_message = process_outgoing_text(answer, language)
             logger.info({"regional_answer": regional_answer})
@@ -226,6 +229,6 @@ async def chat(request: QueryModel, x_request_id: str = Header(None, alias="X-Re
         logger.error({"index_id": index_id, "query": query_text, "input_language": language, "output_format": output_format, "audio_url": audio_url, "status_code": status_code, "error_message": error_message})
         raise HTTPException(status_code=status_code, detail=error_message)
 
-    response = ResponseForQuery(output=OutputResponse(text=regional_answer, audio=audio_output_url, language=language, format=output_format))
-    logger.info({"x_request_id": x_request_id, "query": query_text, "text": text, "response": response})
+    response = ResponseForQuery(output=OutputResponse(text=regional_answer, audio=audio_output_url, language=language, format=output_format, number_of_input_tokens=input_tokens, number_of_output_tokens=output_tokens, number_of_total_tokens=total_tokens))
+    logger.info({"x_request_id": x_request_id, "query": query_text, "text": text, "response": response, "number of_input_tokens":input_tokens, "number_of_output_tokens":output_tokens, "number_of_total_tokens":total_tokens})
     return response

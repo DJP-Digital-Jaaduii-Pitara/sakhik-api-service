@@ -1,30 +1,16 @@
 import os
+
 from dotenv import load_dotenv
+
+from llm import (AzureChatClient, BaseChatClient, BedrockChatClient,
+                 OllamaChatClient, OpenAIChatClient)
 from logger import logger
+from storage import (AwsS3BucketClass, BaseStorageClass, GcpBucketClass,
+                     OciBucketClass)
+from translation import (BaseTranslationClass, BhashiniTranslationClass,
+                         DhruvaTranslationClass, GoogleCloudTranslationClass)
+from vectorstores import BaseVectorStore, MarqoVectorStore
 
-from translation import (
-    BaseTranslationClass,
-    BhashiniTranslationClass,
-    DhruvaTranslationClass,
-    GoogleCloudTranslationClass
-)
-from storage import (
-    BaseStorageClass,
-    AwsS3BucketClass,
-    GcpBucketClass,
-    OciBucketClass
-)
-from llm import (
-    BaseChatClient,
-    AzureChatClient,
-    OpenAIChatClient,
-    OllamaChatClient
-)
-
-from vectorstores import (
-   BaseVectorStore,
-   MarqoVectorStore
-)
 
 class EnvironmentManager():
     """
@@ -37,7 +23,8 @@ class EnvironmentManager():
                 "class": {
                     "openai": OpenAIChatClient,
                     "azure": AzureChatClient,
-                    "ollama": OllamaChatClient
+                    "ollama": OllamaChatClient,
+                    "bedrock": BedrockChatClient                    
                 },
                 "env_key": "LLM_TYPE"
             },

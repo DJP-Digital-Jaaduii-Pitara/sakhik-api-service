@@ -4,7 +4,7 @@ from logger import logger
 from env_manager import translate_class as translator
 from utils import get_from_env_or_config
 
-DEFAULT_LANGAUGE = get_from_env_or_config('default', 'language', None)
+DEFAULT_LANGAUGE = get_from_env_or_config('default', 'language_default', None)
 
 def process_incoming_voice(file_url, input_language):
     """

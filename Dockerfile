@@ -4,10 +4,12 @@ RUN apt-get update && apt install build-essential --fix-missing -y
 RUN apt-get install ffmpeg -y
 COPY ./requirements-prod.txt /code/requirements-prod.txt
 RUN python -m pip install --upgrade pip
+ARG CONFIG_FILE_PATH
+COPY $CONFIG_FILE_PATH /config/config
+COPY . /config
 RUN pip install --no-cache-dir --upgrade -r /code/requirements-prod.txt
 COPY . /code
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "8"]
 
 # FROM continuumio/anaconda3:2023.03-1
 # WORKDIR /root

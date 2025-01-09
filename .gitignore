@@ -11,3 +11,6 @@ sample.env
 extraction.py
 docker-compose.yml
 .json
+config
+docker-compose.yaml
+config.ini

@@ -1,0 +1,28 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create config file from secret
+        run: |
+          echo "${{ secrets.CONFIG_FILE }}" > config
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            --build-arg CONFIG_FILE_PATH=config \
+            -t psa-aibot:latest .
+
+      - name: Push Docker Image to Docker Hub
+        run: |
+          docker push psa-aibot:latest

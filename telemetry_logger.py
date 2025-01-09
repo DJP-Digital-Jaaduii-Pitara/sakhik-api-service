@@ -1,13 +1,18 @@
 import time
 import uuid
 import os
+import json
 import requests
 from utils import get_from_env_or_config
 from logger import logger
+from dotenv import load_dotenv
+load_dotenv()
 
 telemetryURL = os.getenv('TELEMETRY_ENDPOINT_URL')
 ENV_NAME = os.getenv('SERVICE_ENVIRONMENT')
 TELEMETRY_LOG_ENABLED = get_from_env_or_config('telemetry', 'telemetry_log_enabled', None).lower() == "true"
+LLM_TYPE=os.getenv("LLM_TYPE")
+TRANSLATION_TYPE=os.getenv("TRANSLATION_TYPE")
 telemetry_id = get_from_env_or_config('telemetry', 'service_id', None)
 telemetry_ver = get_from_env_or_config('telemetry', 'service_ver', None)
 actor_id = get_from_env_or_config('telemetry', 'actor_id', None)
@@ -80,7 +85,7 @@ class TelemetryLogger:
             "eid": "LOG",
             "ets": int(time.time() * 1000),  # Current timestamp
             "ver": telemetry_ver,  # Version
-            "mid": f"LOG:{round(time.time())}",  # Unique message ID
+            "mid": f"LOG:{round(time.time())}--{str(uuid.uuid4())}",  # Unique message ID
             "actor": {
                 "id": actor_id,
                 "type": "System",
@@ -92,7 +97,10 @@ class TelemetryLogger:
                     "ver": "1.0",
                     "pid": ""
                 },
-                "env": ENV_NAME
+                "env": ENV_NAME,
+                "llm_type": LLM_TYPE,
+                "translation_type": TRANSLATION_TYPE
+
             },
             "edata": {
                 "type": etype,
@@ -142,6 +150,12 @@ class TelemetryLogger:
         if bool(flattened_dict):
             for item in flattened_dict.items():
                 eventEDataParams.append({item[0]: item[1]})
+
+        if eventInput.get("response", {}) != {}:
+            flattened_dict = self.__flatten_dict(json.loads(eventInput.get("response", {})))
+            if bool(flattened_dict):
+                for item in flattened_dict.items():
+                    eventEDataParams.append({item[0]: item[1]})
 
         return eventEDataParams
 

@@ -1,4 +1,5 @@
 import argparse
+import re
 from typing import (
     List
 )
@@ -33,13 +34,15 @@ def split_documents(documents: List[Document], chunk_size: int = 4000, chunk_ove
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     # splited_docs = text_splitter.split_documents(documents)
+    pattern = re.compile(r'[\x00-\x1F\x7F\u00A0]')
     splited_docs = []
     for document in documents:
         for chunk in text_splitter.split_text(document.text):
+            chunk = re.sub(pattern, '', chunk)
             splited_docs.append(Document(page_content=chunk, metadata={
                 "page_label": document.metadata.get("page_label"),
                 "file_name": document.metadata.get("file_name"),
-                "file_path": document.metadata.get("file_path"),
+                # "file_path": document.metadata.get("file_path"),
                 "file_type": document.metadata.get("file_type")
             }))
     return splited_docs
